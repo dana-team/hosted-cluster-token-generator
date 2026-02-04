@@ -1,0 +1,15 @@
+image:
+  repository: ghcr.io/dana-team/token-manager
+  tag: ""
+
+config:
+  clusterDomain: "apps-example-com"
+  schedule: "0 0 * * *"
+
+remote:
+  apiUrl: ""
+  token: ""
+
+serviceAccount:
+  name: "token-manager-sa"
+

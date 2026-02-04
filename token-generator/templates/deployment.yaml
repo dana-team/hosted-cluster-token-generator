@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: token-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: token-manager
+  template:
+    metadata:
+      labels:
+        app: token-manager
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name | default "token-manager-sa" }}
+      containers:
+      - name: shell-operator
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        env:
+        - name: CLUSTER_DOMAIN
+          value: {{ .Values.config.clusterDomain | quote }}
+        - name: REMOTE_API_URL
+          value: {{ .Values.remote.apiUrl | quote }}
+        - name: REMOTE_TOKEN
+          value: {{ .Values.remote.token | quote }}
+        - name: CRON_SCHEDULE
+          value: {{ .Values.config.schedule | quote }}  
