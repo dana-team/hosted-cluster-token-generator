@@ -37,8 +37,8 @@ fi
 TARGET_CONFIGMAP="application-rbac-validator-cluster-tokens"
 TARGET_NAMESPACE="application-rbac-validator-system" 
 
-if [[ -z "$CLUSTER_DOMAIN" || -z "$REMOTE_API_URL" || -z "$REMOTE_TOKEN" ]]; then
-  echo "ERROR: Missing required env vars (CLUSTER_DOMAIN, REMOTE_API_URL, or REMOTE_TOKEN)."
+if [[ -z "$CLUSTER_DOMAIN" ]]; then
+  echo "ERROR: Missing required env vars (CLUSTER_DOMAIN)."
   exit 1
 fi
 
