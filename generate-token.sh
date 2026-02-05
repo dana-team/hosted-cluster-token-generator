@@ -29,7 +29,7 @@ for i in {1..30}; do
     
     if [[ -n "$token" ]]; then
         log "Token generated successfully"
-        echo "$token" | base64 --decode
+        echo "$token" | base64 -d
         exit 0
     fi
     sleep 1
