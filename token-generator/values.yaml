@@ -6,9 +6,13 @@ config:
   clusterDomain: "apps-example-com"
   schedule: "0 0 * * *"
 
-remote:
-  apiUrl: ""
-  token: ""
+remotes:
+  - name: us-east-1
+    url: ""
+    token: ""
+  - name: us-east-2
+    url: ""
+    token: ""
 
 serviceAccount:
   name: "token-manager-sa"

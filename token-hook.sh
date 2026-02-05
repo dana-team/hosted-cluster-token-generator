@@ -29,6 +29,11 @@ TEMP_PATCH_FILE="/tmp/patch.json"
 
 echo "{}" > "$LOCAL_JSON"
 
+if [[ -z "$REMOTES_JSON" ]]; then
+  echo "ERROR: REMOTES_JSON environment variable is empty."
+  exit 1
+fi
+
 TARGET_CONFIGMAP="application-rbac-validator-cluster-tokens"
 TARGET_NAMESPACE="application-rbac-validator-system" 
 
@@ -79,7 +84,7 @@ sync_hosted_cluster() {
     export KUBECONFIG="/tmp/${hosted_cluster_name}.kubeconfig"
 
     if NEW_TOKEN=$(/app/scripts/generate-token.sh); then
-        KEY="${hosted_cluster_name}-${CLUSTER_DOMAIN}-token"
+        KEY="${hosted_cluster_name}-${CLUSTER_DOMAIN}-6443-token"
         
         echo "Generated token for $hosted_cluster_name -> Key: $KEY"
 
@@ -128,19 +133,32 @@ fi
 
 jq '{data: .}' "$LOCAL_JSON" > "$TEMP_PATCH_FILE"
 
-echo "Connecting to Remote Cluster ($REMOTE_API_URL) to patch ConfigMap '$TARGET_CONFIGMAP'..."
+echo "Starting Multi-Site Patching..."
 
-oc patch configmap "$TARGET_CONFIGMAP" \
-  -n "$TARGET_NAMESPACE" \
-  --type=merge \
-  --patch-file "$TEMP_PATCH_FILE" \
-  --server="$REMOTE_API_URL" \
-  --token="$REMOTE_TOKEN" \
-  --insecure-skip-tls-verify=true
+# We echo the Env Var and pipe it into jq
+echo "$REMOTES_JSON" | jq -c '.[]' | while read -r site; do
+    
+    SITE_NAME=$(echo "$site" | jq -r '.name')
+    SITE_URL=$(echo "$site" | jq -r '.url')
+    SITE_TOKEN=$(echo "$site" | jq -r '.token')
 
-if [[ $? -eq 0 ]]; then
-  echo "SUCCESS: Remote ConfigMap updated."
-else
-  echo "ERROR: Failed to patch remote ConfigMap."
-  exit 1
-fi
+    echo "------------------------------------------------"
+    echo "Target: $SITE_NAME ($SITE_URL)"
+
+    oc patch configmap "$TARGET_CONFIGMAP" \
+      -n "$TARGET_NAMESPACE" \
+      --type=merge \
+      --patch-file "$TEMP_PATCH_FILE" \
+      --server="$SITE_URL" \
+      --token="$SITE_TOKEN" \
+      --insecure-skip-tls-verify=true
+    
+    if [[ $? -eq 0 ]]; then
+      echo "SUCCESS: Updated $SITE_NAME"
+    else
+      echo "ERROR: Failed to update $SITE_NAME"
+    fi
+
+done
+
+echo "Multi-site sync complete."
