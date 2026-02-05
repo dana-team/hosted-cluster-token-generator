@@ -19,10 +19,8 @@ spec:
         env:
         - name: CLUSTER_DOMAIN
           value: {{ .Values.config.clusterDomain | quote }}
-        - name: REMOTE_API_URL
-          value: {{ .Values.remote.apiUrl | quote }}
-        - name: REMOTE_TOKEN
-          value: {{ .Values.remote.token | quote }}
+        - name: REMOTES_JSON
+          value: {{ .Values.remotes | toJson | quote }}
         - name: CRON_SCHEDULE
           value: {{ .Values.config.schedule | quote }}  
         volumeMounts:
