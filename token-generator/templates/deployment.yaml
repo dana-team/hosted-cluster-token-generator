@@ -25,3 +25,9 @@ spec:
           value: {{ .Values.remote.token | quote }}
         - name: CRON_SCHEDULE
           value: {{ .Values.config.schedule | quote }}  
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /var/run/shell-operator
+      volumes:
+      - name: socket-dir
+        emptyDir: {}
